@@ -14,7 +14,7 @@ docker run -d --name n8n -p 5678:5678 -v ~/.n8n:/home/node/.n8n docker.n8n.io/n8
 npm install n8n -g && n8n start
 ```
 
-### Step 2: Get Free API Keys (15 minutes)
+### Step 2: Get Free API Keys (10 minutes)
 
 **YouTube** (Required):
 1. Go to [console.cloud.google.com](https://console.cloud.google.com/)
@@ -28,17 +28,22 @@ npm install n8n -g && n8n start
 3. Copy key
 4. ✅ Done!
 
-**Google Cloud TTS** (For voiceover - Free):
-1. Same project as YouTube
-2. Enable "Cloud Text-to-Speech API"
-3. Use same OAuth credentials
-4. ✅ Done!
-
 **Pexels** (For stock footage - Free):
 1. Go to [pexels.com/api](https://www.pexels.com/api/)
 2. Sign up → Generate key
 3. Copy key
 4. ✅ Done!
+
+### Step 2b: Install Edge TTS for Voiceover (2 minutes - NO BILLING!)
+
+**Recommended: Edge TTS** (Truly free - no credit card):
+```bash
+pip3 install edge-tts
+
+# Test it
+edge-tts --voice en-US-GuyNeural --text "Hello, this is a test." --write-media test.mp3
+```
+✅ Done! No API key or billing required!
 
 ### Step 3: Install FFmpeg (2 minutes)
 
@@ -153,6 +158,7 @@ Before going live, make sure:
 
 - [ ] n8n is running (`docker ps` or check `localhost:5678`)
 - [ ] FFmpeg installed (`ffmpeg -version`)
+- [ ] Edge TTS installed (`edge-tts --version`)
 - [ ] All API keys added to `.env`
 - [ ] Credentials configured in n8n
 - [ ] Workflow imported and saved
@@ -234,19 +240,24 @@ After setup:
 
 ---
 
-## 💰 Costs (All Free Tier)
+## 💰 Costs (Truly Free Options)
 
+**No Credit Card Required:**
 - **n8n**: Free (self-hosted)
 - **YouTube API**: Free (10k quota/day)
 - **Google Gemini**: Free (60 req/min)
-- **Google TTS**: Free (1M chars/month = 50+ videos)
+- **Edge TTS**: Free unlimited (no billing needed!) ✅
 - **Pexels**: Free (200 req/hour)
 - **FFmpeg**: Free (open source)
 
 **Total: $0/month** ✅
 
+**Alternatives that require billing:**
+- Google Cloud TTS: 1M chars/month free (but requires credit card)
+- Azure TTS: 5M chars/month free (but requires credit card)
+
 Optional upgrades:
-- ElevenLabs: $22/month (more natural voice)
+- ElevenLabs: $22/month (most natural voice)
 - VPS hosting: $5/month (run 24/7)
 
 ---

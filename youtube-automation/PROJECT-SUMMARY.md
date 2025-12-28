@@ -68,7 +68,7 @@ A **complete, production-ready YouTube automation system** that handles EVERYTHI
    
 3. CREATE VOICEOVER (AI)
    ↓ Natural human-like US accent
-   ↓ ElevenLabs or Google TTS
+   ↓ Edge TTS (free, no billing) or ElevenLabs
    
 4. DOWNLOAD STOCK FOOTAGE
    ↓ Pexels API (free)
@@ -130,12 +130,12 @@ A **complete, production-ready YouTube automation system** that handles EVERYTHI
 
 ## 💰 Cost Breakdown
 
-**100% FREE with these limits:**
+**100% FREE (No Credit Card Required):**
 
 | Service | Free Tier | Enough For |
 |---------|-----------|------------|
 | Google Gemini | 60 req/min | Unlimited scripts |
-| Google Cloud TTS | 1M chars/month | 50+ videos/month |
+| **Edge TTS** | **Unlimited** | **Unlimited videos** ✅ |
 | Pexels API | 200 req/hour | Unlimited videos |
 | YouTube API | 10k units/day | 6 uploads/day |
 | n8n | Unlimited | Self-hosted |
@@ -143,8 +143,12 @@ A **complete, production-ready YouTube automation system** that handles EVERYTHI
 
 **Total: $0/month** ✅
 
+**Alternatives (Require Billing/Credit Card):**
+- Google Cloud TTS: 1M chars/month (needs credit card even for free tier)
+- Azure TTS: 5M chars/month (needs credit card even for free tier)
+
 **Optional Upgrades:**
-- ElevenLabs ($22/mo) - More natural voice
+- ElevenLabs ($22/mo) - Most natural voice
 - VPS Hosting ($5/mo) - 24/7 operation
 
 ## 🚀 Quick Start (Under 1 Hour)
@@ -154,13 +158,16 @@ A **complete, production-ready YouTube automation system** that handles EVERYTHI
    docker run -d --name n8n -p 5678:5678 docker.n8n.io/n8nio/n8n
    ```
 
-2. **Get API Keys** (15 min)
+2. **Get API Keys** (10 min)
    - YouTube API (Google Cloud Console)
    - Gemini API (Google AI Studio)
    - Pexels API (Pexels.com)
 
-3. **Install FFmpeg** (2 min)
+3. **Install FFmpeg & Edge TTS** (3 min)
    ```bash
+   sudo apt install ffmpeg -y
+   pip3 install edge-tts
+   ```
    sudo apt install ffmpeg -y
    ```
 

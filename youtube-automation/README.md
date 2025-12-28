@@ -481,7 +481,19 @@ POST https://api.elevenlabs.io/v1/text-to-speech/[voice_id]
 }
 ```
 
-**Option 2: Google Text-to-Speech (Free tier)**
+**Option 2: Edge TTS (FREE - No Billing Required)**
+```bash
+# Install
+pip3 install edge-tts
+
+# Generate voiceover (completely free, no API key)
+edge-tts --voice en-US-GuyNeural --text "[your script]" --write-media voiceover.mp3
+
+# Available voices: en-US-GuyNeural, en-US-JennyNeural, en-US-AriaNeural, etc.
+```
+
+**Option 3: Google Text-to-Speech (Requires Billing)**
+⚠️ **Note:** Requires credit card even for free tier
 ```javascript
 POST https://texttospeech.googleapis.com/v1/text:synthesize
 {

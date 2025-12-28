@@ -135,15 +135,44 @@ pip3 install pillow requests
 
 **Free tier:** 200 requests per hour (more than enough)
 
-#### 5. Alternative: Google Cloud Text-to-Speech (Free)
+#### 5. Alternative: Google Cloud Text-to-Speech
 
-If you want to save ElevenLabs quota:
+⚠️ **Important:** Google Cloud requires billing to be enabled (credit card) even though the free tier won't charge you unless you exceed limits.
+
+If you're comfortable adding a payment method:
 
 1. In Google Cloud Console (same project as YouTube)
-2. Enable "Cloud Text-to-Speech API"
-3. Use same OAuth credentials
+2. Enable billing account (credit card required)
+3. Enable "Cloud Text-to-Speech API"
+4. Use same OAuth credentials
 
 **Free tier:** 1 million characters/month (enough for 50+ videos)
+**Note:** Won't be charged unless you exceed free tier limits
+
+#### 6. Alternative (NO BILLING REQUIRED): Edge TTS (Unlimited & Free)
+
+Microsoft Edge TTS can be used without any billing or API keys:
+
+```bash
+# Install edge-tts (Python package)
+pip3 install edge-tts
+
+# Test it (completely free, no API key needed)
+edge-tts --voice en-US-GuyNeural --text "Hello, this is a test." --write-media test.mp3
+```
+
+**Available US Voices:**
+- `en-US-GuyNeural` - Male, natural
+- `en-US-JennyNeural` - Female, friendly
+- `en-US-AriaNeural` - Female, conversational
+- `en-US-DavisNeural` - Male, energetic
+
+**Advantages:**
+- ✅ Completely free, unlimited usage
+- ✅ No API key required
+- ✅ No billing/credit card needed
+- ✅ Very natural-sounding voices
+- ✅ Can be integrated into n8n workflow
 
 ### Part 3: Configure n8n (10 minutes)
 

@@ -47,7 +47,59 @@ This guide ensures your automated YouTube videos sound natural and engaging for 
 - **Style**: 0.5 = Balanced expressiveness
 - **Speaker Boost**: true = Enhanced clarity
 
-### Option 2: Google Cloud Text-to-Speech (Free tier: 1M characters/month)
+### Option 2: Edge TTS (RECOMMENDED - No Billing Required)
+
+**✅ Truly Free - No Credit Card or API Key Needed**
+
+Microsoft Edge TTS is the best free alternative with no billing requirements:
+
+**Installation:**
+```bash
+pip3 install edge-tts
+```
+
+**Best US Voices (Natural & Free):**
+
+**Male Voices:**
+- `en-US-GuyNeural` - Professional, clear (RECOMMENDED)
+- `en-US-DavisNeural` - Energetic, youthful
+- `en-US-JasonNeural` - Friendly, conversational
+- `en-US-TonyNeural` - Authoritative, mature
+
+**Female Voices:**
+- `en-US-JennyNeural` - Warm, friendly (RECOMMENDED)
+- `en-US-AriaNeural` - Conversational, natural
+- `en-US-SaraNeural` - Professional, clear
+- `en-US-NancyNeural` - Mature, trustworthy
+
+**Command Line Usage:**
+```bash
+# Generate voiceover
+edge-tts --voice en-US-GuyNeural --text "Your script text here" --write-media output.mp3
+
+# Or from file
+edge-tts --voice en-US-JennyNeural --file script.txt --write-media voiceover.mp3
+```
+
+**n8n Integration (Execute Command node):**
+```bash
+echo "{{$json['script']}}" > /tmp/script.txt && \
+edge-tts --voice en-US-GuyNeural --file /tmp/script.txt --write-media {{$env.TEMP_DIRECTORY}}/voiceover.mp3
+```
+
+**Advantages:**
+- ✅ Completely free, unlimited usage
+- ✅ No API key required
+- ✅ No billing/credit card needed
+- ✅ Very natural-sounding voices
+- ✅ Fast generation
+- ✅ Works offline
+
+### Option 3: Google Cloud Text-to-Speech (Requires Billing)
+
+⚠️ **Requires credit card even for free tier**
+
+**Free tier: 1M characters/month** (won't charge unless exceeded)
 
 **Best US Voices** (Neural2 = Most Natural):
 
@@ -61,28 +113,16 @@ This guide ensures your automated YouTube videos sound natural and engaging for 
 - `en-US-Neural2-E` - Professional, clear (30-40)
 - `en-US-Neural2-F` - Youthful, energetic (20-30)
 
-**Configuration for Natural Speech**:
-```json
-{
-  "voice": {
-    "languageCode": "en-US",
-    "name": "en-US-Neural2-J",
-    "ssmlGender": "MALE"
-  },
-  "audioConfig": {
-    "audioEncoding": "MP3",
-    "pitch": 0,
-    "speakingRate": 1.0,
-    "volumeGainDb": 0,
-    "effectsProfileId": ["medium-bluetooth-speaker-class-device"]
-  }
-}
-```
+**Note:** Google Cloud requires billing enabled (credit card) to use any APIs, even free tier ones.
 
-### Option 3: Azure Text-to-Speech (Free: 5M characters/month)
+### Option 4: Azure Text-to-Speech (Requires Billing)
+
+⚠️ **Also requires billing account**
+
+**Free: 5M characters/month**
 
 **Top US Neural Voices:**
-- `en-US-JennyNeural` - Female, friendly (Most popular)
+- `en-US-JennyNeural` - Female, friendly
 - `en-US-GuyNeural` - Male, professional
 - `en-US-AriaNeural` - Female, conversational
 - `en-US-DavisNeural` - Male, energetic

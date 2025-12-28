@@ -27,17 +27,29 @@ Check the VOICEOVER-GUIDE.md for best practices.
 
 ### Q: How much does this cost?
 
-**A:** $0 per month with free tiers! Here's what you get free:
-- Google TTS: 1M characters/month (50+ videos)
+**A:** $0 per month with truly free options! Here's what you get free:
+- **Edge TTS: Unlimited (no billing/credit card required!)** ✅
 - YouTube API: 10,000 quota units/day (6 uploads/day)
 - Gemini API: 60 requests/minute
 - Pexels: 200 requests/hour
 - n8n: Free (self-hosted)
 - FFmpeg: Free (open source)
 
-Optional paid upgrades:
-- ElevenLabs ($22/mo) for the most natural voices
+Optional alternatives:
+- Google Cloud TTS: 1M chars/month free BUT requires billing enabled (credit card)
+- ElevenLabs: 10k chars/month free (about 1 video/month)
+
+Paid upgrades:
+- ElevenLabs Creator ($22/mo) for the most natural voices
 - VPS hosting ($5-10/mo) to run 24/7
+
+### Q: Does Google Cloud TTS really require billing?
+
+**A:** Yes, unfortunately. Google Cloud requires you to enable billing (add a credit card) to use ANY of their APIs, even the free tier ones. 
+
+However, you won't be charged unless you exceed the free tier limits (1M characters/month = 50+ videos).
+
+**Better alternative:** Use **Edge TTS** instead - it's completely free with no billing required and has very natural-sounding US voices! See VOICEOVER-GUIDE.md for setup.
 
 ### Q: Do I need to record anything myself?
 

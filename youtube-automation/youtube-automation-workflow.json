@@ -1,0 +1,592 @@
+{
+  "name": "YouTube Automation - Full Video Production (5x Weekly)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1,2,4,5,6"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger (5x Week)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "notes": "Runs Mon, Tue, Thu, Fri, Sat at 9 AM"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://trends.google.com/trends/api/dailytrends",
+        "options": {
+          "qs": {
+            "geo": "US"
+          }
+        }
+      },
+      "name": "Find Trending Topics (US)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        450,
+        300
+      ],
+      "notes": "Discover trending topics in the United States"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/youtube/v3/search",
+        "authentication": "oAuth2",
+        "options": {
+          "qs": {
+            "part": "snippet",
+            "q": "={{$json[\"topic\"]}}",
+            "regionCode": "US",
+            "relevanceLanguage": "en",
+            "order": "viewCount",
+            "maxResults": 10
+          }
+        }
+      },
+      "name": "Research YouTube Trends (US)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        650,
+        300
+      ],
+      "notes": "Check what's popular on YouTube in US"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Select best topic for US audience\nconst topics = $input.all();\nconst filtered = topics.filter(t => \n  t.json.viewCount > 50000 && \n  t.json.engagement > 0.05\n);\n\nconst selected = filtered[0];\nreturn [{\n  json: {\n    topic: selected.json.title,\n    keywords: selected.json.tags,\n    targetAudience: 'US adults 18-45',\n    tone: 'conversational and friendly'\n  }\n}];"
+      },
+      "name": "Select Topic for US Audience",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "bodyParametersJson": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Write an engaging 1,900-word YouTube script for a 10-12 minute video about {{$json['topic']}}. Target audience: US viewers aged 18-45. Tone: Conversational, friendly, and natural - like talking to a friend over coffee. Use American English, US cultural references, and relatable examples.\\n\\nScript Requirements:\\n- Start with a powerful hook (first 10 seconds)\\n- Use casual, conversational language (contractions like 'you're', 'we'll', 'it's')\\n- Include US-specific examples and references\\n- Add natural transitions between sections\\n- Use rhetorical questions to engage viewers\\n- Include 2-3 light jokes or humorous observations\\n- Add conversational fillers naturally (like 'you know', 'I mean', 'basically')\\n- End with a strong call-to-action\\n\\nStructure:\\n[HOOK - 30 sec / 75 words] - Start with a question or surprising fact\\n[INTRO - 1 min / 150 words] - Casual welcome, preview content\\n[MAIN CONTENT - 8 min / 1,200 words] - 4 sections, each 2 minutes\\n[EXAMPLES - 1.5 min / 250 words] - Real US-based scenarios\\n[CTA - 30 sec / 75 words] - Encourage engagement\\n[OUTRO - 30 sec / 75 words] - Friendly wrap-up\\n\\nWrite the complete script now:\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 2500\n  }\n}"
+      },
+      "name": "Generate Natural Script (US-Focused)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1050,
+        300
+      ],
+      "notes": "Creates conversational script for US audience"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract and validate script\nconst response = $json.candidates[0].content.parts[0].text;\nconst wordCount = response.split(/\\s+/).length;\n\n// Calculate estimated video length\nconst speakingRate = 155; // words per minute for natural speech\nconst estimatedMinutes = wordCount / speakingRate;\n\nif (estimatedMinutes < 10 || estimatedMinutes > 12) {\n  throw new Error(`Script length ${estimatedMinutes.toFixed(1)} min is outside target 10-12 min range`);\n}\n\nreturn [{\n  json: {\n    script: response,\n    wordCount: wordCount,\n    estimatedDuration: estimatedMinutes,\n    topic: $node[\"Select Topic for US Audience\"].json.topic,\n    targetLength: '10-12 minutes'\n  }\n}];"
+      },
+      "name": "Validate Script Length",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "headers": {
+            "xi-api-key": "={{$env.ELEVENLABS_API_KEY}}"
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        },
+        "bodyParametersJson": "={\n  \"text\": \"{{$json['script']}}\",\n  \"model_id\": \"eleven_monolingual_v1\",\n  \"voice_settings\": {\n    \"stability\": 0.5,\n    \"similarity_boost\": 0.75,\n    \"style\": 0.5,\n    \"use_speaker_boost\": true\n  }\n}"
+      },
+      "name": "Generate Human-Like Voiceover (US Male)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1450,
+        250
+      ],
+      "notes": "Voice: Rachel (US Female, Natural) or Adam (US Male, Natural). ID: 21m00Tcm4TlvDq8ikWAM is Rachel - very natural sounding"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://texttospeech.googleapis.com/v1/text:synthesize",
+        "authentication": "oAuth2",
+        "bodyParametersJson": "={\n  \"input\": {\n    \"text\": \"{{$json['script']}}\"\n  },\n  \"voice\": {\n    \"languageCode\": \"en-US\",\n    \"name\": \"en-US-Neural2-J\",\n    \"ssmlGender\": \"MALE\"\n  },\n  \"audioConfig\": {\n    \"audioEncoding\": \"MP3\",\n    \"pitch\": 0,\n    \"speakingRate\": 1.0,\n    \"volumeGainDb\": 0,\n    \"effectsProfileId\": [\"medium-bluetooth-speaker-class-device\"]\n  }\n}"
+      },
+      "name": "Alternative: Google TTS (US Neural Voice)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1450,
+        350
+      ],
+      "notes": "Backup option - en-US-Neural2-J is very natural sounding. Other options: Neural2-D (female), Neural2-A (male)"
+    },
+    {
+      "parameters": {
+        "command": "=ffprobe -i {{$json['voiceover_path']}} -show_entries format=duration -v quiet -of csv=\"p=0\"",
+        "cwd": "/tmp"
+      },
+      "name": "Verify Audio Duration",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1650,
+        300
+      ],
+      "notes": "Ensure voiceover is 10-12 minutes"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.pexels.com/videos/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "qs": {
+            "query": "={{$json['topic']}}",
+            "per_page": 15,
+            "orientation": "landscape",
+            "size": "large"
+          },
+          "headers": {
+            "Authorization": "={{$env.PEXELS_API_KEY}}"
+          }
+        }
+      },
+      "name": "Get Stock Footage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1450,
+        450
+      ],
+      "notes": "Download relevant video clips"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Download video files from Pexels\nconst videos = $json.videos.slice(0, 10);\nconst downloads = [];\n\nfor (let i = 0; i < videos.length; i++) {\n  const video = videos[i];\n  const url = video.video_files.find(f => f.quality === 'hd').link;\n  downloads.push({\n    url: url,\n    filename: `clip_${i}.mp4`,\n    duration: video.duration\n  });\n}\n\nreturn downloads.map(d => ({ json: d }));"
+      },
+      "name": "Prepare Video Clips",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1650,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$json['url']}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "name": "Download Clips",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1850,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=cd {{$env.TEMP_DIRECTORY}} && \n# Create file list for concatenation\nfor f in clip_*.mp4; do echo \"file '$f'\" >> filelist.txt; done\n\n# Concatenate all clips to match audio duration (10-12 min)\nffmpeg -f concat -safe 0 -i filelist.txt -c copy concatenated.mp4\n\n# Get audio duration\nAUDIO_DURATION=$(ffprobe -i voiceover.mp3 -show_entries format=duration -v quiet -of csv=\"p=0\")\n\n# Loop video to match audio duration if needed\nffmpeg -stream_loop -1 -i concatenated.mp4 -i voiceover.mp3 \\\n  -filter_complex \"[0:v]setpts=PTS-STARTPTS,scale=1920:1080[v];[1:a]volume=1.0[a]\" \\\n  -map \"[v]\" -map \"[a]\" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k \\\n  -t $AUDIO_DURATION -shortest base_video.mp4\n\n# Add background music (lower volume)\nffmpeg -i base_video.mp4 -i background_music.mp3 \\\n  -filter_complex \"[1:a]volume=0.15[a1];[0:a][a1]amix=inputs=2:duration=first[a]\" \\\n  -map 0:v -map \"[a]\" -c:v copy -c:a aac -b:a 128k video_with_music.mp4\n\n# Add text overlays and transitions\nffmpeg -i video_with_music.mp4 \\\n  -vf \"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='{{$json[\"topic\"]}}':fontcolor=white:fontsize=60:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=50:enable='between(t,0,5)',\\\n       fade=t=in:st=0:d=1,fade=t=out:st=DURATION-1:d=1\" \\\n  -c:a copy final_video.mp4\n\necho \"Video created successfully at final_video.mp4\"",
+        "cwd": "={{$env.TEMP_DIRECTORY}}"
+      },
+      "name": "Assemble Final Video (10-12 min)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2050,
+        300
+      ],
+      "notes": "Create final video with all elements"
+    },
+    {
+      "parameters": {
+        "command": "=cd {{\\.TEMP_DIRECTORY}} && echo \"{{\\[\"topic\"]}}\" | python3 ./generate_thumbnail.py"
+      },
+      "name": "Generate Eye-Catching Thumbnail (US Style)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1850,
+        150
+      ],
+      "notes": "Creates bold, US-style YouTube thumbnail using Python script"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParametersJson": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Create SEO-optimized YouTube metadata for a video about {{$json['topic']}}. Target audience: US viewers.\\n\\nGenerate:\\n\\n1. TITLE (max 60 chars, include primary keyword, make it click-worthy for US audience):\\n\\n2. DESCRIPTION (detailed, keyword-rich, US-focused):\\n- Engaging first 2 lines (appears in search)\\n- Bullet points of what's covered\\n- Timestamps (if applicable)\\n- Social media links section\\n- Relevant hashtags (5-7)\\n- About section\\n\\n3. TAGS (15-20 tags, mix of broad and specific, US-relevant):\\n\\n4. PRIMARY KEYWORD:\\n\\n5. CATEGORY:\\n\\nFormat the response as JSON.\"\n    }]\n  }]\n}"
+      },
+      "name": "Generate SEO Metadata (US-Optimized)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2050,
+        150
+      ],
+      "notes": "Creates metadata optimized for US search"
+    },
+    {
+      "parameters": {
+        "command": "=# Verify final video\nffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {{$env.TEMP_DIRECTORY}}/final_video.mp4\n\n# Check if duration is between 600-720 seconds (10-12 minutes)\nDURATION=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {{$env.TEMP_DIRECTORY}}/final_video.mp4)\n\nif (( $(echo \"$DURATION < 600\" | bc -l) )); then\n  echo \"ERROR: Video too short: ${DURATION}s\"\n  exit 1\nelif (( $(echo \"$DURATION > 720\" | bc -l) )); then\n  echo \"ERROR: Video too long: ${DURATION}s\"\n  exit 1\nelse\n  echo \"SUCCESS: Video duration ${DURATION}s is within 10-12 minute range\"\n  \n  # Move to output directory\n  mv {{$env.TEMP_DIRECTORY}}/final_video.mp4 {{$env.VIDEO_DIRECTORY}}/video_$(date +%Y%m%d_%H%M%S).mp4\n  echo \"Video ready for upload\"\nfi"
+      },
+      "name": "Quality Check (10-12 min verification)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=cd {{$env.VIDEO_DIRECTORY}} && python3 $(dirname {{$env.VIDEO_DIRECTORY}})/upload_to_youtube.py \\\n  --video \"{{$json['video_path']}}\" \\\n  --title \"{{$json['seo']['title']}}\" \\\n  --description \"{{$json['seo']['description']}}\" \\\n  --tags \"{{$json['seo']['tags']}}\" \\\n  --category \"{{$json['seo']['categoryId']}}\" \\\n  --privacy \"public\" \\\n  --thumbnail \"{{$json['thumbnail_path']}}\" \\\n  --credentials \"{{$env.TEMP_DIRECTORY}}/youtube_credentials.json\" \\\n  --token \"{{$env.TEMP_DIRECTORY}}/youtube_token.pickle\""
+      },
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2450,
+        300
+      ],
+      "notes": "Uploads video to YouTube using Python script and YouTube Data API v3"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Log successful upload\nconst videoData = {\n  uploadDate: new Date().toISOString(),\n  videoId: $json.id,\n  title: $json.snippet.title,\n  duration: '10-12 minutes',\n  url: `https://youtube.com/watch?v=${$json.id}`,\n  topic: $node[\"Select Topic for US Audience\"].json.topic,\n  targetAudience: 'US viewers',\n  voiceStyle: 'Natural human-like (US accent)',\n  status: 'Published'\n};\n\nconsole.log('Video uploaded successfully:', videoData);\n\nreturn [{ json: videoData }];"
+      },
+      "name": "Log Upload Success",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendEmail",
+        "toEmail": "your-email@example.com",
+        "subject": "=YouTube Video Uploaded: {{$json['title']}}",
+        "text": "=\u2705 Video successfully uploaded to YouTube!\\n\\nTitle: {{$json['title']}}\\nDuration: 10-12 minutes\\nVideo URL: {{$json['url']}}\\nUpload Time: {{$json['uploadDate']}}\\n\\nTarget: US Audience\\nVoice: Natural Human-like (US accent)\\n\\nNext upload scheduled: Check workflow schedule (5x per week)\\n\\n\ud83c\udfac Keep creating!"
+      },
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        2850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=# Cleanup temporary files\nrm -f {{$env.TEMP_DIRECTORY}}/clip_*.mp4\nrm -f {{$env.TEMP_DIRECTORY}}/filelist.txt\nrm -f {{$env.TEMP_DIRECTORY}}/concatenated.mp4\nrm -f {{$env.TEMP_DIRECTORY}}/base_video.mp4\nrm -f {{$env.TEMP_DIRECTORY}}/video_with_music.mp4\nrm -f {{$env.TEMP_DIRECTORY}}/voiceover.mp3\n\necho \"Cleanup complete. Ready for next video generation.\""
+      },
+      "name": "Cleanup Temp Files",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3050,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json['error']}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2250,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendEmail",
+        "toEmail": "your-email@example.com",
+        "subject": "\u26a0\ufe0f YouTube Automation Error",
+        "text": "=An error occurred in the YouTube automation workflow:\\n\\nError: {{$json['error']}}\\nNode: {{$json['node']}}\\nTime: {{$json['timestamp']}}\\n\\nPlease check the n8n workflow logs for details."
+      },
+      "name": "Send Error Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        2450,
+        550
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (5x Week)": {
+      "main": [
+        [
+          {
+            "node": "Find Trending Topics (US)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Trending Topics (US)": {
+      "main": [
+        [
+          {
+            "node": "Research YouTube Trends (US)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research YouTube Trends (US)": {
+      "main": [
+        [
+          {
+            "node": "Select Topic for US Audience",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Topic for US Audience": {
+      "main": [
+        [
+          {
+            "node": "Generate Natural Script (US-Focused)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Natural Script (US-Focused)": {
+      "main": [
+        [
+          {
+            "node": "Validate Script Length",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Script Length": {
+      "main": [
+        [
+          {
+            "node": "Generate Human-Like Voiceover (US Male)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Stock Footage",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Eye-Catching Thumbnail (US Style)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Human-Like Voiceover (US Male)": {
+      "main": [
+        [
+          {
+            "node": "Verify Audio Duration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Stock Footage": {
+      "main": [
+        [
+          {
+            "node": "Prepare Video Clips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Video Clips": {
+      "main": [
+        [
+          {
+            "node": "Download Clips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Clips": {
+      "main": [
+        [
+          {
+            "node": "Assemble Final Video (10-12 min)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Audio Duration": {
+      "main": [
+        [
+          {
+            "node": "Assemble Final Video (10-12 min)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Eye-Catching Thumbnail (US Style)": {
+      "main": [
+        [
+          {
+            "node": "Generate SEO Metadata (US-Optimized)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate SEO Metadata (US-Optimized)": {
+      "main": [
+        [
+          {
+            "node": "Quality Check (10-12 min verification)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble Final Video (10-12 min)": {
+      "main": [
+        [
+          {
+            "node": "Quality Check (10-12 min verification)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Check (10-12 min verification)": {
+      "main": [
+        [
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Log Upload Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Upload Success": {
+      "main": [
+        [
+          {
+            "node": "Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Notification": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temp Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}

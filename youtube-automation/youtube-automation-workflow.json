@@ -15,7 +15,10 @@
       "name": "Schedule Trigger (5x Week)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
-      "position": [250, 300],
+      "position": [
+        250,
+        300
+      ],
       "notes": "Runs Mon, Tue, Thu, Fri, Sat at 9 AM"
     },
     {
@@ -31,7 +34,10 @@
       "name": "Find Trending Topics (US)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [450, 300],
+      "position": [
+        450,
+        300
+      ],
       "notes": "Discover trending topics in the United States"
     },
     {
@@ -53,7 +59,10 @@
       "name": "Research YouTube Trends (US)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [650, 300],
+      "position": [
+        650,
+        300
+      ],
       "notes": "Check what's popular on YouTube in US"
     },
     {
@@ -63,7 +72,10 @@
       "name": "Select Topic for US Audience",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [850, 300]
+      "position": [
+        850,
+        300
+      ]
     },
     {
       "parameters": {
@@ -81,7 +93,10 @@
       "name": "Generate Natural Script (US-Focused)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [1050, 300],
+      "position": [
+        1050,
+        300
+      ],
       "notes": "Creates conversational script for US audience"
     },
     {
@@ -91,7 +106,10 @@
       "name": "Validate Script Length",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [1250, 300]
+      "position": [
+        1250,
+        300
+      ]
     },
     {
       "parameters": {
@@ -114,7 +132,10 @@
       "name": "Generate Human-Like Voiceover (US Male)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [1450, 250],
+      "position": [
+        1450,
+        250
+      ],
       "notes": "Voice: Rachel (US Female, Natural) or Adam (US Male, Natural). ID: 21m00Tcm4TlvDq8ikWAM is Rachel - very natural sounding"
     },
     {
@@ -127,7 +148,10 @@
       "name": "Alternative: Google TTS (US Neural Voice)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [1450, 350],
+      "position": [
+        1450,
+        350
+      ],
       "notes": "Backup option - en-US-Neural2-J is very natural sounding. Other options: Neural2-D (female), Neural2-A (male)"
     },
     {
@@ -138,7 +162,10 @@
       "name": "Verify Audio Duration",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [1650, 300],
+      "position": [
+        1650,
+        300
+      ],
       "notes": "Ensure voiceover is 10-12 minutes"
     },
     {
@@ -162,7 +189,10 @@
       "name": "Get Stock Footage",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [1450, 450],
+      "position": [
+        1450,
+        450
+      ],
       "notes": "Download relevant video clips"
     },
     {
@@ -172,7 +202,10 @@
       "name": "Prepare Video Clips",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [1650, 450]
+      "position": [
+        1650,
+        450
+      ]
     },
     {
       "parameters": {
@@ -190,7 +223,10 @@
       "name": "Download Clips",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [1850, 450]
+      "position": [
+        1850,
+        450
+      ]
     },
     {
       "parameters": {
@@ -200,19 +236,24 @@
       "name": "Assemble Final Video (10-12 min)",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [2050, 300],
+      "position": [
+        2050,
+        300
+      ],
       "notes": "Create final video with all elements"
     },
     {
       "parameters": {
-        "language": "Python",
-        "pythonCode": "from PIL import Image, ImageDraw, ImageFont, ImageFilter\nimport requests\nfrom io import BytesIO\nimport textwrap\n\n# Configuration for US audience\ntitle = input_data['topic'][:60]  # YouTube title limit\nbackground_url = \"https://source.unsplash.com/1280x720/?technology,modern\"\n\n# Download background\nresponse = requests.get(background_url)\nimg = Image.open(BytesIO(response.content))\nimg = img.resize((1280, 720), Image.Resampling.LANCZOS)\n\n# Apply slight blur for background\nblurred = img.filter(ImageFilter.GaussianBlur(3))\n\n# Create dark gradient overlay for text readability\noverlay = Image.new('RGBA', img.size, (0, 0, 0, 0))\ndraw_overlay = ImageDraw.Draw(overlay)\nfor i in range(720):\n    alpha = int(100 + (i / 720) * 80)  # Gradient from semi-transparent to more opaque\n    draw_overlay.rectangle([(0, i), (1280, i+1)], fill=(0, 0, 0, alpha))\n\nimg = Image.alpha_composite(blurred.convert('RGBA'), overlay)\n\n# Add text\ndraw = ImageDraw.Draw(img)\n\n# Try to load a bold font (common on most systems)\ntry:\n    title_font = ImageFont.truetype(\"/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\", 90)\n    subtitle_font = ImageFont.truetype(\"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf\", 40)\nexcept:\n    title_font = ImageFont.load_default()\n    subtitle_font = ImageFont.load_default()\n\n# Word wrap title for better display\nwrapped_title = textwrap.fill(title, width=20)\n\n# Add title with shadow effect (US style - bold and eye-catching)\nfor offset in [(2,2), (-2,2), (2,-2), (-2,-2)]:\n    draw.multiline_text(\n        (640 + offset[0], 300 + offset[1]), \n        wrapped_title, \n        font=title_font, \n        fill='black', \n        anchor='mm',\n        align='center'\n    )\n\n# Main title in white\ndraw.multiline_text(\n    (640, 300), \n    wrapped_title, \n    font=title_font, \n    fill='white', \n    anchor='mm',\n    align='center'\n)\n\n# Add engaging subtitle\nsubtitle = \"WATCH NOW!\"\ndraw.text(\n    (640, 500), \n    subtitle, \n    font=subtitle_font, \n    fill='#FF0000',  # YouTube red\n    anchor='mm'\n)\n\n# Add accent elements (modern US YouTube style)\ndraw.rectangle([(40, 600), (240, 620)], fill='#FF0000')  # Red accent bar\n\n# Save thumbnail\noutput_path = '/tmp/thumbnail.jpg'\nimg.convert('RGB').save(output_path, 'JPEG', quality=95, optimize=True)\n\nreturn {'thumbnail_path': output_path}"
+        "command": "=cd {{\\.TEMP_DIRECTORY}} && echo \"{{\\[\"topic\"]}}\" | python3 ./generate_thumbnail.py"
       },
       "name": "Generate Eye-Catching Thumbnail (US Style)",
-      "type": "n8n-nodes-base.python",
+      "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [1850, 150],
-      "notes": "Creates bold, US-style YouTube thumbnail"
+      "position": [
+        1850,
+        150
+      ],
+      "notes": "Creates bold, US-style YouTube thumbnail using Python script"
     },
     {
       "parameters": {
@@ -225,7 +266,10 @@
       "name": "Generate SEO Metadata (US-Optimized)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [2050, 150],
+      "position": [
+        2050,
+        150
+      ],
       "notes": "Creates metadata optimized for US search"
     },
     {
@@ -235,7 +279,10 @@
       "name": "Quality Check (10-12 min verification)",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [2250, 300]
+      "position": [
+        2250,
+        300
+      ]
     },
     {
       "parameters": {
@@ -257,7 +304,10 @@
       "name": "Upload to YouTube",
       "type": "n8n-nodes-base.youtube",
       "typeVersion": 1,
-      "position": [2450, 300],
+      "position": [
+        2450,
+        300
+      ],
       "credentials": {
         "youtubeOAuth2Api": {
           "id": "1",
@@ -273,19 +323,25 @@
       "name": "Log Upload Success",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [2650, 300]
+      "position": [
+        2650,
+        300
+      ]
     },
     {
       "parameters": {
         "operation": "sendEmail",
         "toEmail": "your-email@example.com",
         "subject": "=YouTube Video Uploaded: {{$json['title']}}",
-        "text": "=✅ Video successfully uploaded to YouTube!\\n\\nTitle: {{$json['title']}}\\nDuration: 10-12 minutes\\nVideo URL: {{$json['url']}}\\nUpload Time: {{$json['uploadDate']}}\\n\\nTarget: US Audience\\nVoice: Natural Human-like (US accent)\\n\\nNext upload scheduled: Check workflow schedule (5x per week)\\n\\n🎬 Keep creating!"
+        "text": "=\u2705 Video successfully uploaded to YouTube!\\n\\nTitle: {{$json['title']}}\\nDuration: 10-12 minutes\\nVideo URL: {{$json['url']}}\\nUpload Time: {{$json['uploadDate']}}\\n\\nTarget: US Audience\\nVoice: Natural Human-like (US accent)\\n\\nNext upload scheduled: Check workflow schedule (5x per week)\\n\\n\ud83c\udfac Keep creating!"
       },
       "name": "Send Notification",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2,
-      "position": [2850, 300]
+      "position": [
+        2850,
+        300
+      ]
     },
     {
       "parameters": {
@@ -294,7 +350,10 @@
       "name": "Cleanup Temp Files",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [3050, 300]
+      "position": [
+        3050,
+        300
+      ]
     },
     {
       "parameters": {
@@ -310,19 +369,25 @@
       "name": "Error Handler",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [2250, 450]
+      "position": [
+        2250,
+        450
+      ]
     },
     {
       "parameters": {
         "operation": "sendEmail",
         "toEmail": "your-email@example.com",
-        "subject": "⚠️ YouTube Automation Error",
+        "subject": "\u26a0\ufe0f YouTube Automation Error",
         "text": "=An error occurred in the YouTube automation workflow:\\n\\nError: {{$json['error']}}\\nNode: {{$json['node']}}\\nTime: {{$json['timestamp']}}\\n\\nPlease check the n8n workflow logs for details."
       },
       "name": "Send Error Notification",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2,
-      "position": [2450, 550]
+      "position": [
+        2450,
+        550
+      ]
     }
   ],
   "connections": {

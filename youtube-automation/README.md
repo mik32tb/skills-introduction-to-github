@@ -560,22 +560,26 @@ Week 2:
 
 ### Complete Node Structure
 
+**Important:** This workflow uses only built-in n8n nodes. No community nodes required!
+
 ```
 1. Cron Node (5x weekly trigger)
 2. Content Discovery Node
 3. Topic Research Node (HTTP Request)
 4. Script Generation Node (HTTP Request - Gemini API)
 5. Script Validation Node (Function)
-6. Voiceover Generation Node (HTTP Request - ElevenLabs)
+6. Voiceover Generation Node (HTTP Request - ElevenLabs or Execute Command - Edge TTS)
 7. Visual Content Collection Node (HTTP Request - Pexels)
 8. Video Assembly Node (Execute Command - FFmpeg)
 9. Quality Check Node (Function)
-10. Thumbnail Generation Node (Python)
+10. Thumbnail Generation Node (Execute Command - Python script)
 11. SEO Optimization Node (HTTP Request - Gemini API)
 12. YouTube Upload Node (YouTube API)
 13. Notification Node (Email/Slack)
 14. Archive Node (Move Files)
 ```
+
+**Note:** The thumbnail generation uses a Python script (`generate_thumbnail.py`) executed via the Execute Command node. Make sure to copy this script to your working directory and install dependencies (`pip3 install pillow requests`).
 
 ## 🚨 Troubleshooting
 

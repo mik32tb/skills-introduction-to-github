@@ -67,6 +67,10 @@ mkdir -p ~/youtube-videos/{output,temp,archive}
 # Copy environment template
 cp youtube-automation/.env.example ~/.n8n/.env
 
+# Copy Python thumbnail script
+cp youtube-automation/generate_thumbnail.py ~/youtube-videos/
+chmod +x ~/youtube-videos/generate_thumbnail.py
+
 # Edit with your API keys
 nano ~/.n8n/.env
 
@@ -87,6 +91,8 @@ nano ~/.n8n/.env
 4. Click ⋮ → "Import from File"
 5. Select `youtube-automation-workflow.json`
 6. Click "Save"
+
+**Note:** The workflow uses only built-in n8n nodes, so no community nodes are required!
 
 ### Step 6: Add Credentials (10 minutes)
 

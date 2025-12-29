@@ -283,7 +283,25 @@ docker restart n8n
 
 The workflow file `youtube-automation-workflow.json` is in this repository.
 
-#### 2. Import into n8n
+#### 2. Copy Python Script to Workflow Directory
+
+The workflow uses a Python script for thumbnail generation:
+
+```bash
+# Copy the thumbnail generation script
+cp youtube-automation/generate_thumbnail.py ~/youtube-videos/
+
+# Make it executable
+chmod +x ~/youtube-videos/generate_thumbnail.py
+
+# Test it
+cd ~/youtube-videos
+echo '{"topic": "Test Video Title"}' | python3 generate_thumbnail.py
+```
+
+If successful, you'll see: `{"thumbnail_path": "/tmp/thumbnail.jpg"}`
+
+#### 3. Import into n8n
 
 1. In n8n interface, click "Workflows" in left sidebar
 2. Click "+ Add Workflow"
@@ -291,7 +309,7 @@ The workflow file `youtube-automation-workflow.json` is in this repository.
 4. Select `youtube-automation-workflow.json`
 5. Workflow will open with all nodes
 
-#### 3. Configure Workflow Nodes
+#### 4. Configure Workflow Nodes
 
 Go through each node and verify/update:
 
@@ -466,6 +484,21 @@ SPEAKING_RATE=155
 ```
 
 ## 🛠️ Troubleshooting Common Issues
+
+### Issue: "Unrecognized node type: n8n-nodes-base.python"
+
+**Problem:** The workflow uses a Python node that's not available in standard n8n.
+
+**Solution:**
+This has been fixed in the latest version. The workflow now uses the built-in Execute Command node with a Python script.
+
+If you still see this error:
+1. Make sure you have the latest `youtube-automation-workflow.json` file
+2. Re-import the workflow
+3. Ensure `generate_thumbnail.py` is copied to your working directory
+4. Install Python dependencies: `pip3 install pillow requests`
+
+The thumbnail generation now uses: `Execute Command` → Python script instead of the Python node.
 
 ### Issue: "API quota exceeded"
 

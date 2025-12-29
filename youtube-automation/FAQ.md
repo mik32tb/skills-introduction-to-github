@@ -354,6 +354,18 @@ A virtual assistant can handle this for $5-10/hour.
 
 ## Troubleshooting Questions
 
+### Q: I get "Unrecognized node type: n8n-nodes-base.python" error
+
+**A:** The workflow has been updated to fix this issue. The Python node has been replaced with the standard Execute Command node that runs a Python script.
+
+**To fix:**
+1. Download the latest `youtube-automation-workflow.json`
+2. Copy `generate_thumbnail.py` to your working directory
+3. Install dependencies: `pip3 install pillow requests`
+4. Re-import the workflow in n8n
+
+The new workflow uses only built-in n8n nodes, so no community nodes are required.
+
 ### Q: Workflow keeps failing, what do I do?
 
 **A:** Debug process:

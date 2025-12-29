@@ -574,12 +574,15 @@ Week 2:
 9. Quality Check Node (Function)
 10. Thumbnail Generation Node (Execute Command - Python script)
 11. SEO Optimization Node (HTTP Request - Gemini API)
-12. YouTube Upload Node (YouTube API)
+12. YouTube Upload Node (Execute Command - Python script)
 13. Notification Node (Email/Slack)
 14. Archive Node (Move Files)
 ```
 
-**Note:** The thumbnail generation uses a Python script (`generate_thumbnail.py`) executed via the Execute Command node. Make sure to copy this script to your working directory and install dependencies (`pip3 install pillow requests`).
+**Note:** Both thumbnail generation and YouTube upload use Python scripts (`generate_thumbnail.py` and `upload_to_youtube.py`) executed via Execute Command nodes. Make sure to:
+1. Copy both scripts to your working directory
+2. Install dependencies: `pip3 install pillow requests google-auth-oauthlib google-auth-httplib2 google-api-python-client`
+3. Set up YouTube OAuth credentials (see SETUP-GUIDE.md)
 
 ## 🚨 Troubleshooting
 

@@ -94,11 +94,12 @@ pip3 install pillow requests
    - Support email: Your email
    - Save and continue through all steps
 10. Create OAuth client ID:
-    - Application type: Web application
-    - Name: "n8n YouTube"
-    - Authorized redirect URIs: `http://localhost:5678/rest/oauth2-credential/callback`
+    - Application type: **Desktop app** (not Web application)
+    - Name: "YouTube Automation Script"
     - Click "Create"
-11. **Download JSON file** with client ID and secret
+11. **Download JSON file** and save as `youtube_credentials.json`
+
+**Important:** The credentials file should be placed in your temp directory. The workflow will look for it at `$TEMP_DIRECTORY/youtube_credentials.json`.
 
 **Note:** YouTube API has 10,000 quota units/day (free). Each video upload uses ~1,600 units, so you can upload 6 videos/day.
 
@@ -283,23 +284,39 @@ docker restart n8n
 
 The workflow file `youtube-automation-workflow.json` is in this repository.
 
-#### 2. Copy Python Script to Workflow Directory
+#### 2. Copy Python Scripts to Workflow Directory
 
-The workflow uses a Python script for thumbnail generation:
+The workflow uses Python scripts for thumbnail generation and YouTube uploads:
 
 ```bash
-# Copy the thumbnail generation script
+# Copy both Python scripts
 cp youtube-automation/generate_thumbnail.py ~/youtube-videos/
+cp youtube-automation/upload_to_youtube.py ~/youtube-videos/
 
-# Make it executable
-chmod +x ~/youtube-videos/generate_thumbnail.py
+# Make them executable
+chmod +x ~/youtube-videos/*.py
 
-# Test it
+# Install required Python packages
+pip3 install pillow requests google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+# Test thumbnail script
 cd ~/youtube-videos
 echo '{"topic": "Test Video Title"}' | python3 generate_thumbnail.py
 ```
 
 If successful, you'll see: `{"thumbnail_path": "/tmp/thumbnail.jpg"}`
+
+#### 2b. Set Up YouTube Credentials
+
+```bash
+# Copy your YouTube OAuth credentials to the temp directory
+cp /path/to/your/youtube_credentials.json ~/youtube-videos/temp/
+
+# The first time you upload, the script will open a browser to authenticate
+# After that, it saves a token file for future use
+```
+
+**Note:** When you first run the workflow, the YouTube upload will open a browser for OAuth authentication. Approve the access, and the token will be saved for future automated uploads.
 
 #### 3. Import into n8n
 
@@ -485,20 +502,47 @@ SPEAKING_RATE=155
 
 ## 🛠️ Troubleshooting Common Issues
 
-### Issue: "Unrecognized node type: n8n-nodes-base.python"
+### Issue: "Unrecognized node type: n8n-nodes-base.python" or "n8n-nodes-base.youtube"
 
-**Problem:** The workflow uses a Python node that's not available in standard n8n.
+**Problem:** The workflow previously used community nodes (Python, YouTube) that aren't available in standard n8n.
 
 **Solution:**
-This has been fixed in the latest version. The workflow now uses the built-in Execute Command node with a Python script.
+This has been fixed in the latest version. The workflow now uses **only built-in n8n nodes** with Python scripts.
 
-If you still see this error:
-1. Make sure you have the latest `youtube-automation-workflow.json` file
-2. Re-import the workflow
-3. Ensure `generate_thumbnail.py` is copied to your working directory
-4. Install Python dependencies: `pip3 install pillow requests`
+To update:
+1. Download the latest `youtube-automation-workflow.json`
+2. Copy both scripts to your working directory:
+   ```bash
+   cp generate_thumbnail.py ~/youtube-videos/
+   cp upload_to_youtube.py ~/youtube-videos/
+   ```
+3. Install Python dependencies:
+   ```bash
+   pip3 install pillow requests google-auth-oauthlib google-auth-httplib2 google-api-python-client
+   ```
+4. Set up YouTube credentials (see YouTube Data API section above)
+5. Re-import the workflow
 
-The thumbnail generation now uses: `Execute Command` → Python script instead of the Python node.
+The workflow now uses: `Execute Command` → Python scripts instead of community nodes.
+
+### Issue: "YouTube authentication failed"
+
+**Solution:**
+The first time you run the workflow, YouTube authentication will open a browser window.
+
+```bash
+# Make sure you have the credentials file in place
+cp youtube_credentials.json ~/youtube-videos/temp/
+
+# The first upload will prompt for authentication
+# After that, a token file is saved for future use
+```
+
+If authentication fails:
+1. Check that `youtube_credentials.json` is in the temp directory
+2. Make sure you created OAuth credentials for "Desktop app" (not Web app)
+3. Delete `youtube_token.pickle` and re-authenticate
+4. Check that YouTube Data API v3 is enabled in Google Cloud Console
 
 ### Issue: "API quota exceeded"
 

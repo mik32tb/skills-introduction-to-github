@@ -286,35 +286,16 @@
     },
     {
       "parameters": {
-        "operation": "upload",
-        "videoId": "",
-        "title": "={{$json['seo']['title']}}",
-        "description": "={{$json['seo']['description']}}",
-        "tags": "={{$json['seo']['tags']}}",
-        "categoryId": "={{$json['seo']['categoryId']}}",
-        "privacyStatus": "public",
-        "binaryData": true,
-        "binaryPropertyName": "data",
-        "options": {
-          "publishAt": "",
-          "thumbnailBinaryData": true,
-          "thumbnailBinaryPropertyName": "thumbnail"
-        }
+        "command": "=cd {{$env.VIDEO_DIRECTORY}} && python3 $(dirname {{$env.VIDEO_DIRECTORY}})/upload_to_youtube.py \\\n  --video \"{{$json['video_path']}}\" \\\n  --title \"{{$json['seo']['title']}}\" \\\n  --description \"{{$json['seo']['description']}}\" \\\n  --tags \"{{$json['seo']['tags']}}\" \\\n  --category \"{{$json['seo']['categoryId']}}\" \\\n  --privacy \"public\" \\\n  --thumbnail \"{{$json['thumbnail_path']}}\" \\\n  --credentials \"{{$env.TEMP_DIRECTORY}}/youtube_credentials.json\" \\\n  --token \"{{$env.TEMP_DIRECTORY}}/youtube_token.pickle\""
       },
       "name": "Upload to YouTube",
-      "type": "n8n-nodes-base.youtube",
+      "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
         2450,
         300
       ],
-      "credentials": {
-        "youtubeOAuth2Api": {
-          "id": "1",
-          "name": "YouTube Account"
-        }
-      },
-      "notes": "Publishes video to YouTube"
+      "notes": "Uploads video to YouTube using Python script and YouTube Data API v3"
     },
     {
       "parameters": {

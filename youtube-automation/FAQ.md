@@ -354,17 +354,37 @@ A virtual assistant can handle this for $5-10/hour.
 
 ## Troubleshooting Questions
 
-### Q: I get "Unrecognized node type: n8n-nodes-base.python" error
+### Q: I get "Unrecognized node type" errors (python, youtube, etc.)
 
-**A:** The workflow has been updated to fix this issue. The Python node has been replaced with the standard Execute Command node that runs a Python script.
+**A:** The workflow has been updated to fix this issue. All community nodes have been replaced with built-in nodes + Python scripts.
 
 **To fix:**
 1. Download the latest `youtube-automation-workflow.json`
-2. Copy `generate_thumbnail.py` to your working directory
-3. Install dependencies: `pip3 install pillow requests`
-4. Re-import the workflow in n8n
+2. Copy both scripts to your working directory:
+   ```bash
+   cp generate_thumbnail.py ~/youtube-videos/
+   cp upload_to_youtube.py ~/youtube-videos/
+   ```
+3. Install all dependencies:
+   ```bash
+   pip3 install pillow requests google-auth-oauthlib google-auth-httplib2 google-api-python-client
+   ```
+4. Set up YouTube OAuth credentials (see SETUP-GUIDE.md)
+5. Re-import the workflow in n8n
 
-The new workflow uses only built-in n8n nodes, so no community nodes are required.
+The new workflow uses **only built-in n8n nodes** - no community nodes required!
+
+### Q: How do I set up YouTube authentication?
+
+**A:** The workflow uses YouTube Data API v3 with OAuth2:
+
+1. Create OAuth credentials in Google Cloud Console (Desktop app type)
+2. Download as `youtube_credentials.json`
+3. Copy to temp directory: `cp youtube_credentials.json ~/youtube-videos/temp/`
+4. First upload will open browser for authentication
+5. After approval, token is saved automatically for future uploads
+
+See SETUP-GUIDE.md for detailed instructions.
 
 ### Q: Workflow keeps failing, what do I do?
 

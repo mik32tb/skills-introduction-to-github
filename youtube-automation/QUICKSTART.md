@@ -67,9 +67,16 @@ mkdir -p ~/youtube-videos/{output,temp,archive}
 # Copy environment template
 cp youtube-automation/.env.example ~/.n8n/.env
 
-# Copy Python thumbnail script
+# Copy both Python scripts
 cp youtube-automation/generate_thumbnail.py ~/youtube-videos/
-chmod +x ~/youtube-videos/generate_thumbnail.py
+cp youtube-automation/upload_to_youtube.py ~/youtube-videos/
+chmod +x ~/youtube-videos/*.py
+
+# Install all Python dependencies
+pip3 install pillow requests google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+# Copy YouTube OAuth credentials (download from Google Cloud Console first)
+cp /path/to/your/youtube_credentials.json ~/youtube-videos/temp/
 
 # Edit with your API keys
 nano ~/.n8n/.env
@@ -77,8 +84,6 @@ nano ~/.n8n/.env
 # Add your keys:
 # - GEMINI_API_KEY
 # - PEXELS_API_KEY
-# - YOUTUBE_CLIENT_ID
-# - YOUTUBE_CLIENT_SECRET
 
 # Save and exit (Ctrl+X, Y, Enter)
 ```
@@ -93,6 +98,8 @@ nano ~/.n8n/.env
 6. Click "Save"
 
 **Note:** The workflow uses only built-in n8n nodes, so no community nodes are required!
+
+**First Run:** YouTube upload will open a browser for OAuth authentication. Approve access, and the token will be saved for future automated uploads.
 
 ### Step 6: Add Credentials (10 minutes)
 
